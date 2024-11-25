@@ -9,11 +9,9 @@ class CanvasQuiz:
             "id": quiz_id,
             "title": title,
             "quiz_type": "assignment",  # Default type
-            "points_possible": 0,
-            "question_count": 0,
             "published": False,
-            "questions": [],
         }
+        self.questions = []
 
     def add_question(self, question_text, answers, correct_index):
         """
@@ -24,13 +22,11 @@ class CanvasQuiz:
             answers (list): List of answer strings
             correct_index (int): Index of the correct answer (0-based)
         """
-        position = len(self.quiz_data["questions"]) + 1
+        position = len(self.questions) + 1
         question = CanvasQuestion(position, self)
         question.set_text(question_text)
         question.add_answers(answers, correct_index)
-        self.quiz_data["questions"].append(question.get_formatted())
-        self.quiz_data["question_count"] = len(self.quiz_data["questions"])
-        self.quiz_data["points_possible"] = self.quiz_data["question_count"]
+        self.questions.append(question.get_formatted())
         return question
 
     def get_formatted(self):
@@ -47,24 +43,27 @@ class CanvasQuestion:
     """
     A child class to represent a Canvas multiple choice question within a quiz.
     Each answer must be a dictionary with required fields as per Canvas API documentation.
+    The entire question data is nested under a 'question' key as required by the Canvas API.
     """
 
     def __init__(self, position, parent_quiz):
         self.parent_quiz = parent_quiz
         self.question_data = {
-            "quiz_id": parent_quiz.quiz_data["id"],
-            "position": position,
-            "question_name": f"Question {position}",
-            "question_type": "multiple_choice_question",
-            "question_text": None,
-            "points_possible": 1,
-            "answers": [],
+            "question": {
+                "position": position,
+                "question_name": f"Question {position}",
+                "question_type": "multiple_choice_question",
+                "question_text": None,
+                "points_possible": 1,
+                "answers": [],
+            }
         }
+        quiz_id = parent_quiz.quiz_data["id"]
         self.answer_id_counter = position * 1000  # To ensure unique answer IDs
 
     def set_text(self, text):
         """Set the question text."""
-        self.question_data["question_text"] = text
+        self.question_data["question"]["question_text"] = text
         return self
 
     def add_answers(self, answers, correct_index):
@@ -84,12 +83,15 @@ class CanvasQuestion:
             }
             answer_dicts.append(answer_dict)
 
-        self.question_data["answers"] = answer_dicts
+        self.question_data["question"]["answers"] = answer_dicts
         return self
 
     def get_formatted(self):
         """Return the formatted question dictionary."""
-        if not self.question_data["question_text"] or not self.question_data["answers"]:
+        if (
+            not self.question_data["question"]["question_text"]
+            or not self.question_data["question"]["answers"]
+        ):
             raise ValueError(
                 "Question must have both text and answers before formatting"
             )
@@ -117,3 +119,6 @@ if __name__ == "__main__":
     import json
 
     print(json.dumps(quiz.get_formatted(), indent=2))
+    print("\nQuestions:")
+    for question in quiz.questions:
+        print(json.dumps(question, indent=2))

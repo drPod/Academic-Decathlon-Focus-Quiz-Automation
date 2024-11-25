@@ -39,6 +39,8 @@ for block in qBlocks:
     else:
         quiz.add_question(q, a, 0)
 
+# print([x.get_formatted() for x in canvasQuizzes])
+
 import os
 from dotenv import load_dotenv
 from canvasapi import Canvas
@@ -54,6 +56,28 @@ COURSE_ID = int(os.getenv("COURSE_ID"))
 canvas = Canvas(CANVAS_DOMAIN, CANVAS_TOKEN)
 course = canvas.get_course(COURSE_ID)
 
-for quiz in canvasQuizzes:
-    new_quiz = course.create_quiz(quiz.get_formatted())
-    print(f"Created quiz: {new_quiz.title}")
+
+def delete_all_quizzes(course):
+    for quiz in course.get_quizzes():
+        quiz.delete()
+        print(f"Deleted quiz: {quiz.title}")
+
+
+delete_all_quizzes(course)
+
+new_quiz = course.create_quiz(quiz.get_formatted())
+for q in quiz.questions:
+    print(q)
+    new_question = new_quiz.create_question(**q)
+    print(f"Created question: {new_question}")
+
+# for quiz in canvasQuizzes:
+
+#     new_quiz = course.create_quiz(quiz.get_formatted())
+#     print(f"Created quiz: {new_quiz.title}")
+
+#     for q in quiz.questions:
+#         new_question = new_quiz.create_question(q)
+#         print(q)
+#         print(f"Created question: {new_question.question_name}")
+#     print("")
