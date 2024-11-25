@@ -1,21 +1,15 @@
 import sort
 import pdfToText
 from CanvasClass import CanvasQuiz
+import sys
 
-#! Testing
-# raw_text = ""
-# raw_text += "8. Find the variance for the probability distribution below.\n"
-# raw_text += "Value  -6 -3 2 4\n"
-# raw_text += "Probability  .2 .4 .1 .3\n"
-# raw_text += "a. 11\n"
-# raw_text += "b. 13\n"
-# raw_text += "c. 15\n"
-# raw_text += "d. 17\n"
-# raw_text += "e. 19\n"
+# Check if a command line argument was provided
+if len(sys.argv) < 2:
+    print("Usage: python script.py <pdf_file>")
+    sys.exit(1)
 
-# n, q, a = sort.sort_into_questions_and_answers(raw_text)
-
-quiz_import = "Math Focus Quizzes 2024.pdf"
+# Get the PDF filename from command line argument
+quiz_import = sys.argv[1]
 
 raw_text = pdfToText.extract_text_from_pdf(quiz_import)
 
@@ -63,21 +57,15 @@ def delete_all_quizzes(course):
         print(f"Deleted quiz: {quiz.title}")
 
 
-delete_all_quizzes(course)
+# delete_all_quizzes(course)
 
-new_quiz = course.create_quiz(quiz.get_formatted())
-for q in quiz.questions:
-    print(q)
-    new_question = new_quiz.create_question(**q)
-    print(f"Created question: {new_question}")
+for quiz in canvasQuizzes:
 
-# for quiz in canvasQuizzes:
+    new_quiz = course.create_quiz(quiz.get_formatted())
+    print(f"Created quiz: {new_quiz.title}")
 
-#     new_quiz = course.create_quiz(quiz.get_formatted())
-#     print(f"Created quiz: {new_quiz.title}")
-
-#     for q in quiz.questions:
-#         new_question = new_quiz.create_question(q)
-#         print(q)
-#         print(f"Created question: {new_question.question_name}")
-#     print("")
+    for q in quiz.questions:
+        new_question = new_quiz.create_question(**q)
+        # print(q)
+        print(f"Created question: {new_question.question_name}")
+    print("")
